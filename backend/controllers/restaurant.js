@@ -71,6 +71,9 @@ exports.postLoginRest = async (req, res, next) => {
     }
 
     const rest = await Restaurant.findOne({ email: req.body.email });
+    if (!rest) {
+      throw newError("user with email does not exist");
+    }
 
     //check password
     let pwEqual = await bcrypt.compare(req.body.password, rest.password);

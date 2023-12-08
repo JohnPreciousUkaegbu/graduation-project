@@ -42,14 +42,7 @@ router.post(
       .isEmail()
       .withMessage("Please enter a valid email.")
       .trim()
-      .normalizeEmail()
-      .custom((value) => {
-        return Restaurant.findOne({ email: value }).then((user) => {
-          if (!user) {
-            return Promise.reject("email address doesn't exists!");
-          }
-        });
-      }),
+      .normalizeEmail(),
   ],
   restaurantController.postLoginRest
 );

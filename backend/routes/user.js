@@ -44,7 +44,7 @@ router.post(
       .custom((value) => {
         return User.findOne({ email: value }).then((user) => {
           if (!user) {
-            return Promise.reject("email address doesn't exists!");
+            return Promise.reject("user email address doesn't exists!");
           }
         });
       }),

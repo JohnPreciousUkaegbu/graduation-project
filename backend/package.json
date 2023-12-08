@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "start": "nodemon app.js",
-    "dev": "clear && nodemon app.js",
+    "dev": "clear && NODE_INSPECT_RESUME_ON_START=1 nodemon inspect app.js",
     "docker": "docker compose down && docker compose up",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
