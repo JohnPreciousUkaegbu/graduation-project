@@ -15,19 +15,17 @@ const restaurantSchema = new Schema({
     required: true,
   },
   location: {
-    required: false,
-    type: [
-      {
-        address: {
-          type: String,
-          required: true,
-        },
-        city: {
-          type: String,
-          required: true,
-        },
+    required: true,
+    type: {
+      address: {
+        type: String,
+        required: true,
       },
-    ],
+      city: {
+        type: String,
+        required: true,
+      },
+    },
   },
   phone: {
     type: Number,
@@ -40,7 +38,7 @@ const restaurantSchema = new Schema({
   status: {
     type: String,
     required: true,
-    default: true,
+    default: "closed",
   },
   imageUrl: {
     type: String,

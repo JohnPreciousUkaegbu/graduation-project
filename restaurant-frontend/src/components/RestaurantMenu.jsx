@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { BE_URL } from "../utils/constants";
-import { SendPostRequest } from "../utils/sendRequests";
+import { SendJsonPostRequest } from "../utils/sendRequests";
 import CustomAlert from "./CustomAlert";
 
 const RestaurantMenu = ({ menu }) => {
@@ -25,7 +25,7 @@ const RestaurantMenu = ({ menu }) => {
         quantity,
       };
 
-      const { responseData } = await SendPostRequest(url, body);
+      const { responseData } = await SendJsonPostRequest(url, body);
 
       if (responseData.msg.toLowerCase() == "added") {
         handleAlert();

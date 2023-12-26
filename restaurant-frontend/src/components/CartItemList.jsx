@@ -1,5 +1,5 @@
 import { BE_URL } from "../utils/constants";
-import { SendPostRequest } from "../utils/sendRequests";
+import { SendJsonPostRequest } from "../utils/sendRequests";
 
 const CartItemList = ({ cartItems, GetCartItems }) => {
   const removeItem = async (e, id) => {
@@ -8,7 +8,7 @@ const CartItemList = ({ cartItems, GetCartItems }) => {
     const url = `${BE_URL}/cart/remove-item-from-cart/${id}`;
 
     try {
-      await SendPostRequest(url);
+      await SendJsonPostRequest(url);
 
       GetCartItems();
     } catch (error) {
@@ -22,7 +22,7 @@ const CartItemList = ({ cartItems, GetCartItems }) => {
     const url = `${BE_URL}/cart/decrease-quantity-by-1/${id}`;
 
     try {
-      const { responseData } = await SendPostRequest(url);
+      const { responseData } = await SendJsonPostRequest(url);
 
       GetCartItems();
     } catch (error) {
@@ -36,7 +36,7 @@ const CartItemList = ({ cartItems, GetCartItems }) => {
     const url = `${BE_URL}/cart/increase-quantity-by-1/${id}`;
 
     try {
-      const { responseData } = await SendPostRequest(url);
+      const { responseData } = await SendJsonPostRequest(url);
 
       GetCartItems();
     } catch (error) {

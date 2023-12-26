@@ -12,6 +12,9 @@ const { Cart } = require("../model/cart");
 const newError = require("../util/error");
 const { ObjectId } = require("mongodb");
 
+const defaultImage =
+  "https://lh3.google.com/u/1/d/1g10iaTr6yfjK3JBr428YvUZfWq_ctyuZ=w1366-h668-iv1";
+
 //ADD menu item
 exports.putAddItem = async (req, res, next) => {
   try {
@@ -21,52 +24,45 @@ exports.putAddItem = async (req, res, next) => {
     const name = req.body.name;
     const description = req.body.description;
     const price = req.body.price;
-    const restId = req.restId;
 
     let imageId = "";
-    let imageUrl = "";
+    let imageUrl = defaultImage;
 
-    if (req.file) {
-      //converting the img buffer to a readable stream
-      const stream = Readable.from(req.file.buffer);
-      //uploading the img to google drive
-      const uploadImg = await googleDriveUpload(req, stream);
-      if (uploadImg instanceof Error) {
-        throw uploadImg;
-      }
+    // if (req.file) {
+    //   //converting the img buffer to a readable stream
+    //   const stream = Readable.from(req.file.buffer);
+    //   //uploading the img to google drive
+    //   const uploadImg = await googleDriveUpload(req, stream);
+    //   if (uploadImg instanceof Error) {
+    //     throw uploadImg;
+    //   }
 
-      imageId = uploadImg.data.id;
+    //   imageId = uploadImg.data.id;
 
-      // get the img link
-      const imgLink = await googleDriveGetLink(uploadImg.data.id);
+    //   // get the img link
+    //   const imgLink = await googleDriveGetLink(uploadImg.data.id);
 
-      if (imgLink instanceof Error) {
-        //delete the img if eerror
-        const deleteImg = googleDriveDelete(imageId);
-        if (deleteImg instanceof Error) {
-          throw deleteImg;
-        }
-        throw imgLink;
-      }
-      imageUrl = imgLink.data.webViewLink;
-    }
+    //   if (imgLink instanceof Error) {
+    //     //delete the img if eerror
+    //     const deleteImg = googleDriveDelete(imageId);
+    //     if (deleteImg instanceof Error) {
+    //       throw deleteImg;
+    //     }
+    //     throw imgLink;
+    //   }
+    //   imageUrl = imgLink.data.webViewLink;
+    // }
 
-    //create item
-    const createMenuItem = {
+    const menuItem = await MenuItem.create({
       name,
       price,
       description,
-      restaurantId: restId,
       imageUrl,
-      imageId,
-    };
-
-    const menuItem = await MenuItem.create(createMenuItem);
-
-    res.status(201).json({
-      msg: "created",
-      id: menuItem.id,
+      imageId: imageId == "" ? null : imageId,
+      restaurant: req.rest_Id,
     });
+
+    res.status(201).json({});
   } catch (err) {
     next(err);
   }
@@ -81,40 +77,40 @@ exports.postEditMenuItem = async (req, res, next) => {
 
     const itemId = req.params.id;
 
-    let menuItem = await MenuItem.findOne({ _id: ObjectId(itemId) });
+    let menuItem = await MenuItem.findOne({ _id: itemId });
 
     let imageId = menuItem.imageId;
     let imageUrl = menuItem.imageUrl;
 
-    if (req.file) {
-      //check if the img was changed
-      //upload the new img and delete the old img
-      //change the img links
-      const stream = Readable.from(req.file.buffer);
+    // if (req.file) {
+    //   //check if the img was changed
+    //   //upload the new img and delete the old img
+    //   //change the img links
+    //   const stream = Readable.from(req.file.buffer);
 
-      const uploadImg = await googleDriveUpload(req, stream);
-      if (uploadImg instanceof Error) {
-        throw uploadImg;
-      }
+    //   const uploadImg = await googleDriveUpload(req, stream);
+    //   if (uploadImg instanceof Error) {
+    //     throw uploadImg;
+    //   }
 
-      //updating the img in drive
-      const imgLink = await googleDriveGetLink(uploadImg.data.id);
+    //   //updating the img in drive
+    //   const imgLink = await googleDriveGetLink(uploadImg.data.id);
 
-      if (imgLink instanceof Error) {
-        const deleteImg = googleDriveDelete(uploadImg.data.id);
-        if (deleteImg instanceof Error) {
-          throw deleteImg;
-        }
-        throw imgLink;
-      }
+    //   if (imgLink instanceof Error) {
+    //     const deleteImg = googleDriveDelete(uploadImg.data.id);
+    //     if (deleteImg instanceof Error) {
+    //       throw deleteImg;
+    //     }
+    //     throw imgLink;
+    //   }
 
-      const deleteImg = googleDriveDelete(imageId);
-      if (deleteImg instanceof Error) {
-        throw deleteImg;
-      }
-      imageId = uploadImg.data.id;
-      imageUrl = imgLink.data.webViewLink;
-    }
+    //   const deleteImg = googleDriveDelete(imageId);
+    //   if (deleteImg instanceof Error) {
+    //     throw deleteImg;
+    //   }
+    //   imageId = uploadImg.data.id;
+    //   imageUrl = imgLink.data.webViewLink;
+    // }
 
     //update the menuitem
     menuItem.name = req.body.name;
@@ -122,29 +118,8 @@ exports.postEditMenuItem = async (req, res, next) => {
     menuItem.price = req.body.price;
     menuItem.imageUrl = imageUrl;
     menuItem.imageId = imageId;
-    menuItem = await menuItem.save();
 
-    //updateing the prices in the carts as well
-    let cartItems = await await Cart.find({
-      restaurantId: menuItem.restaurantId,
-      "items.itemId": menuItem.id,
-    });
-    if (cartItems.length > 0) {
-      for (let i = 0; i < cartItems.length; i++) {
-        cartItems[i].items = cartItems[i].items.map((value) => {
-          if (value.itemId == itemId) {
-            //remove the item price from cart -- change the item price -- add the item price back to cart
-            cartItems[i].price -= value.price;
-            value.price = value.quantity * menuItem.price;
-            cartItems[i].price += value.price;
-            return value;
-          } else {
-            return value;
-          }
-        });
-        cartItems[i].save();
-      }
-    }
+    menuItem = await menuItem.save();
 
     res.status(201).json({
       msg: "updated",
@@ -159,44 +134,46 @@ exports.deleteItem = async (req, res, next) => {
   try {
     const itemId = req.params.id;
 
-    //find and delete the menuItem
     const menuItem = await MenuItem.findOneAndDelete({ _id: ObjectId(itemId) });
     if (!menuItem) {
       throw newError("item not found", 400);
     }
 
-    //delete the img from drive
-    const deleteImg = googleDriveDelete(menuItem.imageId);
-    if (deleteImg instanceof Error) {
-      throw deleteImg;
-    }
+    // Delete the image from Google Drive
+    // const deleteImg = googleDriveDelete(menuItem.imageId);
+    // if (deleteImg instanceof Error) {
+    //   throw deleteImg;
+    // }
 
-    //deleting from carts as well
     const cartItems = await Cart.find({
-      restaurantId: menuItem.restaurantId,
-      "items.itemId": itemId,
+      "items.item": itemId,
     });
-    for (let i = 0; i < cartItems.length; i++) {
-      cartItems[i].items = cartItems[i].items.filter((value) => {
-        if (value.itemId == menuItem.id) {
-          //reducing the cart price
-          cartItems[i].price -= value.price;
-          return false;
-        } else {
-          return true;
-        }
-      });
-      //deleteing the cart if there is no item inside
-      if (cartItems[i].items.length == 0) {
-        console.log("inside");
-        console.log();
-        await Cart.deleteOne({ _id: cartItems[i].id });
-      } else {
-        await cartItems[i].save();
+
+    if (cartItems.length > 0) {
+      for (const cartItem of cartItems) {
+        const cart = await Cart.findByIdAndUpdate(cartItem._id, {
+          $pull: { items: { item: itemId } },
+        });
       }
     }
 
     res.status(200).json({ msg: "deleted" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+//Get MenuItem
+exports.getRestaurantMenuItems = async (req, res, next) => {
+  try {
+    const restaurantId = req.params.restaurantId;
+
+    const restaurant = await Restaurant.findOne({ _id: restaurantId });
+    if (!restaurant) throw newError("invalid restaurant");
+
+    const menuItems = await MenuItem.find({ restaurant: restaurant._id });
+
+    res.status(200).json({ menuItems });
   } catch (err) {
     next(err);
   }

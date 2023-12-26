@@ -16,6 +16,7 @@ import "./styles.css";
 import Restaurants from "./pages/Restaurants";
 import Signup from "./pages/Signup";
 import Order from "./pages/Order";
+import MenuItems from "./pages/MenuItems";
 
 const Contact = lazy(() => import("./pages/Contact"));
 
@@ -29,28 +30,8 @@ const router = createBrowserRouter([
         element: <Home />,
       },
       {
-        path: "search",
-        element: <Search />,
-      },
-      {
-        path: "about",
-        element: <About />,
-      },
-      {
-        path: "cart",
-        element: <Cart />,
-      },
-      {
         path: "order",
         element: <Order />,
-      },
-      {
-        path: "contact",
-        element: (
-          <Suspense fallback={<h1>Loading...</h1>}>
-            <Contact />
-          </Suspense>
-        ),
       },
       {
         path: "login",
@@ -61,12 +42,8 @@ const router = createBrowserRouter([
         element: <Signup />,
       },
       {
-        path: "restaurants",
-        element: <Restaurants />,
-      },
-      {
-        path: "restaurants/:id",
-        element: <Restaurant />,
+        path: "menu-items",
+        element: <MenuItems />,
       },
     ],
     errorElement: <Error />,

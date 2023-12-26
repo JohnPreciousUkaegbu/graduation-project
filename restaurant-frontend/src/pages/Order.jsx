@@ -10,7 +10,7 @@ function Order(props) {
   useEffect(() => {
     async function fetchData() {
       try {
-        const url = `${BE_URL}/order/user`;
+        const url = `${BE_URL}/order/restaurant`;
         const { responseData } = await SendGetRequest(url);
         setOrders(responseData.orders);
       } catch (error) {
@@ -29,7 +29,13 @@ function Order(props) {
     setSelectedImage(null);
   };
 
-  return (
+  console.log(orders);
+
+  return orders.length === 0 ? (
+    <div className="flex items-center justify-center h-screen">
+      <div className="text-4xl">No Orders</div>
+    </div>
+  ) : (
     <div className="container mx-auto mt-5">
       {orders.map((order, index) => {
         const date = new Date(order.Date);

@@ -17,6 +17,10 @@ const menuItemSchema = new Schema({
       "https://lh3.google.com/u/1/d/1g10iaTr6yfjK3JBr428YvUZfWq_ctyuZ=w1366-h668-iv1",
   },
 
+  imageId: {
+    type: String,
+  },
+
   price: {
     type: Number,
     required: true,

@@ -100,5 +100,12 @@ exports.getRestaurantOrders = async (req, res, next) => {
     "items.restaurant": restaurantId,
   });
 
-  return res.status(200).json({ orders: restaurantOrders });
+  const filteredOrders = restaurantOrders.map((order) => ({
+    ...order._doc,
+    items: order.items.filter(
+      (item) => item.restaurant.toString() === restaurantId
+    ),
+  }));
+
+  return res.status(200).json({ orders: filteredOrders });
 };

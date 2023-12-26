@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import Location from "./Location";
+import MenuItem from "./MenuItem";
 import { BE_URL } from "../utils/constants";
-import { SendPostRequest } from "../utils/sendRequests";
+import { SendJsonPostRequest } from "../utils/sendRequests";
 import { useNavigate } from "react-router-dom";
 
 const OrderSummary = ({ totalPrice, itemsCount }) => {
@@ -34,7 +34,7 @@ const OrderSummary = ({ totalPrice, itemsCount }) => {
     navigate("/order");
 
     try {
-      const { responseData } = await SendPostRequest(url);
+      const { responseData } = await SendJsonPostRequest(url);
     } catch (error) {
       console.error(error);
     }
@@ -85,7 +85,7 @@ const OrderSummary = ({ totalPrice, itemsCount }) => {
       </button>
 
       {showLocation && (
-        <Location onClose={closeLocation} message={"Select Location"} />
+        <MenuItem onClose={closeLocation} message={"Select Location"} />
       )}
     </div>
   );

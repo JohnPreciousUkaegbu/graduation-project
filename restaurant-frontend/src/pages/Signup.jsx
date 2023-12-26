@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { BE_URL } from "../utils/constants";
+import React, { useState, useRef } from "react";
+import { BE_URL, inputTagCss } from "../utils/constants";
 import { Navigate } from "react-router-dom";
 
 const Signup = () => {
@@ -7,6 +7,8 @@ const Signup = () => {
   const [error, setError] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const inputRef = useRef(null);
 
   const togglePasswordVisibility = (field) => {
     if (field === "password") {
@@ -19,11 +21,27 @@ const Signup = () => {
   async function handleSignup(e) {
     e.preventDefault();
 
-    const firstname = e.target[0].value;
-    const lastname = e.target[1].value;
-    const email = e.target[2].value;
-    const password = e.target[3].value;
-    const confirmPassword = e.target[5].value;
+    const name = e.target[0].value;
+    const email = e.target[1].value;
+    const phoneNumber = e.target[2].value;
+    const address = e.target[3].value;
+    const city = e.target[4].value;
+    const password = e.target[5].value;
+    const confirmPassword = e.target[7].value;
+
+    const file = inputRef.current.files[0];
+
+    console.log(file, e.target.files);
+
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("email", email);
+    formData.append("phone", phoneNumber);
+    formData.append("address", address);
+    formData.append("city", city);
+    formData.append("password", password);
+    formData.append("confirmPassword", confirmPassword);
+    formData.append("image", file);
 
     if (password !== confirmPassword) {
       setError(true);
@@ -31,29 +49,19 @@ const Signup = () => {
     }
 
     try {
-      const response = await fetch(`${BE_URL}/user/signup`, {
+      const response = await fetch(`${BE_URL}/restaurant/signup`, {
         method: "POST",
-        headers: {
-          "Content-type": "application/json",
-        },
-        body: JSON.stringify({
-          firstname,
-          lastname,
-          email,
-          password,
-          confirmPassword,
-        }),
+        headers: {},
+        body: formData,
       });
-
-      console.log(response);
 
       const responseData = await response.json();
 
       if (!response.ok) {
         throw responseData;
       }
-      http: localStorage.setItem("token", responseData.token);
-      localStorage.setItem("userId", responseData.token);
+      localStorage.setItem("token", responseData.token);
+      localStorage.setItem("id", responseData.id);
       setRedirect(true);
     } catch (error) {
       console.error(error);
@@ -61,7 +69,7 @@ const Signup = () => {
   }
 
   return redirect ? (
-    <Navigate to="/" />
+    <Navigate to="/order" />
   ) : (
     <div className="">
       <div className="max-w-md w-full p-6 rounded-lg shadow-lg mx-auto mt-20">
@@ -76,29 +84,16 @@ const Signup = () => {
         >
           <div className="rounded-md shadow-sm space-y-4">
             <div className="relative">
-              <label htmlFor="firstName" className="sr-only">
-                First Name
+              <label htmlFor="restaurantName" className="sr-only">
+                Restaurant Name
               </label>
               <input
-                id="firstName"
-                name="firstName"
+                id="restaurantName"
+                name="restaurantName"
                 type="text"
                 required
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="First Name"
-              />
-            </div>
-            <div className="relative">
-              <label htmlFor="lastName" className="sr-only">
-                Last Name
-              </label>
-              <input
-                id="lastName"
-                name="lastName"
-                type="text"
-                required
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Last Name"
+                className={inputTagCss}
+                placeholder="Restaurant Name"
               />
             </div>
             <div className="relative">
@@ -110,8 +105,48 @@ const Signup = () => {
                 name="email"
                 type="email"
                 required
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className={inputTagCss}
                 placeholder="Email"
+              />
+            </div>
+
+            <div className="relative">
+              <label htmlFor="phoneNumber" className="sr-only">
+                Phone Number
+              </label>
+              <input
+                id="phoneNumber"
+                name="phoneNumber"
+                type="tel"
+                required
+                className={inputTagCss}
+                placeholder="Phone Number"
+              />
+            </div>
+            <div className="relative">
+              <label htmlFor="address" className="sr-only">
+                Address
+              </label>
+              <input
+                id="address"
+                name="address"
+                type="text"
+                required
+                className={inputTagCss}
+                placeholder="Address"
+              />
+            </div>
+            <div className="relative">
+              <label htmlFor="city" className="sr-only">
+                City
+              </label>
+              <input
+                id="city"
+                name="city"
+                type="text"
+                required
+                className={inputTagCss}
+                placeholder="city"
               />
             </div>
             <div className="relative">
@@ -124,7 +159,7 @@ const Signup = () => {
                 type={showPassword ? "text" : "password"}
                 autoComplete="new-password"
                 required
-                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className={inputTagCss}
                 placeholder="Password"
               />
               <button
@@ -227,6 +262,19 @@ const Signup = () => {
                   </svg>
                 )}
               </button>
+            </div>
+            <div className="relative mt-4">
+              <label htmlFor="image" className="sr-only">
+                Select Logo
+              </label>
+              <input
+                id="image"
+                name="image"
+                type="file"
+                ref={inputRef}
+                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Select Logo"
+              />
             </div>
             {error && (
               <p className="text-red-600 text-sm mt-2">Password do not match</p>

@@ -4,8 +4,9 @@
   "description": "an app at is used to order food",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon app.js",
-    "dev": "clear && NODE_INSPECT_RESUME_ON_START=1 nodemon inspect app.js",
+    "start": "node app.js",
+    "dev:debug": "clear && NODE_INSPECT_RESUME_ON_START=1 nodemon inspect app.js",
+    "dev": "clear && nodemon app.js",
     "docker": "docker compose down && docker compose up",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

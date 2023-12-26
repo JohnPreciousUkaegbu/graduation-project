@@ -25,12 +25,12 @@ const fileFilter = (req, file, cb) => {
 const upload = new Multer({ storage: memoryStorage(), fileFilter });
 
 //add-item
-router.put(
+router.post(
   "/add-item",
   upload.single("image"),
   [
-    body("name").isAscii().trim(),
-    body("description").isAscii().trim(),
+    body("name").notEmpty().trim(),
+    body("description").notEmpty().trim(),
     body("price").isNumeric().trim(),
   ],
   restAuth,
@@ -42,14 +42,16 @@ router.post(
   "/edit-item/:id",
   upload.single("image"),
   [
-    body("name").isAscii().trim(),
-    body("description").isAscii().trim(),
+    body("name").notEmpty().trim(),
+    body("description").notEmpty().trim(),
     body("price").isNumeric().trim(),
   ],
   restAuth,
   menuController.postEditMenuItem
 );
 
-router.delete("/delete-item/:id", restAuth, menuController.deleteItem);
+router.post("/delete/:id", restAuth, menuController.deleteItem);
+
+router.get("/:restaurantId", menuController.getRestaurantMenuItems);
 
 module.exports = router;

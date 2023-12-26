@@ -26,6 +26,11 @@ app.use("/api/menu", menuRoute);
 app.use("/api/cart", cartRoute);
 app.use("/api/order", orderRoute);
 
+app.use((req, res) => {
+  console.log("invalid route");
+  res.status(404).json("not found");
+});
+
 app.use((err, req, res, next) => {
   console.log(err);
   const status = err.status || 500;

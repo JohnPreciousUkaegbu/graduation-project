@@ -5,6 +5,7 @@ import { Navigate } from "react-router-dom";
 const Login = () => {
   const [redirect, setRedirect] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState(null);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -35,9 +36,10 @@ const Login = () => {
       }
 
       localStorage.setItem("token", responseData.token);
-      localStorage.setItem("user", responseData.userId);
+      localStorage.setItem("id", responseData.id);
       setRedirect(true);
     } catch (error) {
+      setError("Couldn't Verify User");
       console.error(error);
     }
   }
@@ -48,7 +50,7 @@ const Login = () => {
     <div className="">
       <div className="max-w-md w-full p-6 rounded-lg shadow-lg mx-auto mt-20">
         <h2 className="text-3xl font-extrabold text-gray-900 text-center">
-          Log in to your account
+          Log in to your restaurant account
         </h2>
         <form
           className="mt-8 space-y-6"
@@ -129,6 +131,11 @@ const Login = () => {
               </button>
             </div>
           </div>
+          {error != null && (
+            <div className="text-red-500">
+              <p className="text-red-500">{error}</p>
+            </div>
+          )}
           <div>
             <button
               type="submit"
