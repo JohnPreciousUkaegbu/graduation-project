@@ -45,6 +45,8 @@ function Order(props) {
           .toLocaleDateString("en-US", options)
           .replace(/\//g, "-");
 
+        // console.log(orders);
+
         return (
           <div key={index} className="mb-4 border p-4 rounded shadow-lg">
             <h2 className="text-2xl font-semibold mb-2">

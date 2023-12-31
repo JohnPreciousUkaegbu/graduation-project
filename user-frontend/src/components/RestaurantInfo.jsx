@@ -8,13 +8,9 @@ const RestaurantInfo = ({ restaurant }) => {
       <div>
         <h2 className="text-xl font-bold my-2">{name}</h2>
         <p className="text-xs text-gray-500">{status}</p>
-        {location.map((location, i) => {
-          return (
-            <p className="text-xs text-gray-500">
-              {location.address}, {location.city}
-            </p>
-          );
-        })}
+        <p className="text-xs text-gray-500">
+          {location.address}, {location.city}
+        </p>
       </div>
     </div>
   );

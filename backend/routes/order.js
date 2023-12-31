@@ -15,4 +15,12 @@ router.get("/user", userAuth, orderController.getUserOrders);
 //Get restaurant Orders
 router.get("/restaurant", restAuth, orderController.getRestaurantOrders);
 
+router.post(
+  "/change-status/:orderId/:status",
+  restAuth,
+  orderController.postChangeOrderStatus
+);
+
+// router.post("accept/:orderId", restAuth, orderController.postAcceptOrder);
+
 module.exports = router;

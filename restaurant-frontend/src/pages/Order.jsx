@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { BE_URL } from "../utils/constants";
-import { SendGetRequest } from "../utils/sendRequests";
+import { SendGetRequest, SendJsonPostRequest } from "../utils/sendRequests";
 
 function Order(props) {
   const [orders, setOrders] = useState([]);
@@ -21,6 +21,15 @@ function Order(props) {
     fetchData();
   }, []);
 
+  const handleOrderStatusChange = async (status, orderId) => {
+    try {
+      const url = `${BE_URL}/order/change-status/${orderId}/${status}`;
+      await SendJsonPostRequest(url);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const openImageModal = (imageUrl) => {
     setSelectedImage(imageUrl);
   };
@@ -28,8 +37,6 @@ function Order(props) {
   const closeImageModal = () => {
     setSelectedImage(null);
   };
-
-  console.log(orders);
 
   return orders.length === 0 ? (
     <div className="flex items-center justify-center h-screen">
@@ -47,6 +54,7 @@ function Order(props) {
           hour: "2-digit",
           minute: "2-digit",
         };
+
         const formattedDate = date
           .toLocaleDateString("en-US", options)
           .replace(/\//g, "-");
@@ -69,14 +77,6 @@ function Order(props) {
                     />
                   </div>
                   <p className="font-bold text-xl">{item.item.name}</p>
-                  <p>
-                    <Link
-                      to={`/restaurant/${item.restaurant._id}`}
-                      className="text-blue-500 hover:underline font-semibold"
-                    >
-                      {item.restaurant?.name}
-                    </Link>
-                  </p>
                   <p
                     className={
                       item.status.includes("accepted")
@@ -88,10 +88,41 @@ function Order(props) {
                   >
                     {item.status}
                   </p>
+                  <p>{item.quantity} pieces</p>
                   <p>${item.price.toFixed(2)}</p>
                 </div>
               ))}
             </div>
+
+            {/* Buttons for order status actions */}
+            {order.items.some((item) => item.status === "pending") && (
+              <div className="mt-2 flex space-x-2">
+                <button
+                  onClick={() => handleOrderStatusChange("accepted", order._id)}
+                  className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                >
+                  Accept Order
+                </button>
+                <button
+                  onClick={() => handleOrderStatusChange("declined", order._id)}
+                  className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                >
+                  Decline Order
+                </button>
+              </div>
+            )}
+            {order.items.every((item) => item.status === "accepted") && (
+              <div className="mt-2">
+                <button
+                  onClick={() =>
+                    handleOrderStatusChange("delivered", order._id)
+                  }
+                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                >
+                  Mark Order Delivered
+                </button>
+              </div>
+            )}
           </div>
         );
       })}

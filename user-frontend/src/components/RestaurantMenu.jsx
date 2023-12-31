@@ -5,6 +5,7 @@ import CustomAlert from "./CustomAlert";
 
 const RestaurantMenu = ({ menu }) => {
   const [showAlert, setShowAlert] = useState(false);
+  const [addMessage, setAddMessage] = useState("added to cart");
 
   function handleAlert() {
     setShowAlert(true);
@@ -28,9 +29,12 @@ const RestaurantMenu = ({ menu }) => {
       const { responseData } = await SendPostRequest(url, body);
 
       if (responseData.msg.toLowerCase() == "added") {
+        setAddMessage("Added to cart");
         handleAlert();
       }
     } catch (error) {
+      setAddMessage("an error occurred");
+      handleAlert();
       console.error(error);
     }
   }
@@ -80,9 +84,7 @@ const RestaurantMenu = ({ menu }) => {
           </li>
         ))}
       </ul>
-      {showAlert && (
-        <CustomAlert message="Added item to cart" onClose={closeAlert} />
-      )}
+      {showAlert && <CustomAlert message={addMessage} onClose={closeAlert} />}
     </div>
   );
 };

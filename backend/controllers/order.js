@@ -92,12 +92,16 @@ exports.getRestaurantOrders = async (req, res, next) => {
   const restaurantId = req.restId;
 
   const restaurant = await Restaurant.findOne({ _id: restaurantId });
+
   if (!restaurant) {
     throw newError("Restaurant not found", 404);
   }
 
   const restaurantOrders = await Order.find({
     "items.restaurant": restaurantId,
+  }).populate({
+    path: "items.item",
+    model: "MenuItem", // Replace 'MenuItem' with the name of your MenuItem model
   });
 
   const filteredOrders = restaurantOrders.map((order) => ({
@@ -108,4 +112,33 @@ exports.getRestaurantOrders = async (req, res, next) => {
   }));
 
   return res.status(200).json({ orders: filteredOrders });
+};
+
+exports.postChangeOrderStatus = async (req, res, next) => {
+  const restaurantId = req.restId;
+
+  const orderId = req.params.orderId;
+  const status = req.params.status;
+
+  try {
+    if (status != "accepted" && status != "declined" && status != "delivered") {
+      throw newError("invalid status");
+    }
+
+    const order = await Order.findOne({ _id: orderId });
+    if (!order) {
+      throw newError("order not found", 404);
+    }
+
+    order.items = order.items.map((item) => ({
+      ...item,
+      status: status,
+    }));
+
+    order.save();
+
+    return res.status(204);
+  } catch (err) {
+    next(err);
+  }
 };
