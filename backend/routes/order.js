@@ -21,6 +21,4 @@ router.post(
   orderController.postChangeOrderStatus
 );
 
-// router.post("accept/:orderId", restAuth, orderController.postAcceptOrder);
-
 module.exports = router;

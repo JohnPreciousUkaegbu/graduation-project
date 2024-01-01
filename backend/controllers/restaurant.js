@@ -1,6 +1,8 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { Readable } = require("stream");
+const path = require("path");
+const fs = require("fs");
 const {
   googleDriveDelete,
   googleDriveGetLink,
@@ -31,7 +33,7 @@ const _signToken = (restaurant) => {
 exports.putSignupRest = async (req, res, next) => {
   try {
     const valErr = ValErrorCheck(req);
-    if (valErr) next(valErr);
+    if (valErr) throw valErr;
 
     const email = req.body.email;
     const name = req.body.name;
@@ -51,34 +53,31 @@ exports.putSignupRest = async (req, res, next) => {
 
     let imageId = "";
     let imageUrl = "";
-    // if (req.file) {
-    //   //converting the img buffer to a readable stream
-    //   const stream = Readable.from(req.file.buffer);
+    if (req.file) {
+      // this is the implementation if you where going to save the image in google drive
+      // const stream = Readable.from(req.file.buffer);
+      // const uploadImg = await googleDriveUpload(req, stream);
+      // if (uploadImg instanceof Error) {
+      //   console.log("error upload");
+      //   throw uploadImg;
+      // }
+      // imageId = uploadImg.data.id;
+      // const imgLink = await googleDriveGetLink(uploadImg.data.id);
 
-    //   //uploading the img to google drive
-    //   const uploadImg = await googleDriveUpload(req, stream);
-    //   if (uploadImg instanceof Error) {
-    //     console.log("error upload");
-    //     throw uploadImg;
-    //   }
+      // if (imgLink instanceof Error) {
+      //   const deleteImg = googleDriveDelete(imageId);
+      //   if (deleteImg instanceof Error) {
+      //     console.log("error deleting img");
+      //     throw deleteImg;
+      //   }
+      //   throw imgLink;
+      // }
+      // imageUrl = imgLink.data.webViewLink;
 
-    //   imageId = uploadImg.data.id;
-
-    //   // get the img link
-    //   const imgLink = await googleDriveGetLink(uploadImg.data.id);
-
-    //   if (imgLink instanceof Error) {
-    //     //delete the img if eerror
-    //     const deleteImg = googleDriveDelete(imageId);
-    //     if (deleteImg instanceof Error) {
-    //       console.log("error deleting img");
-    //       throw deleteImg;
-    //     }
-    //     throw imgLink;
-    //   }
-    //   imageUrl = imgLink.data.webViewLink;
-    //   console.log(imageUrl);
-    // }
+      const relativeFilePath = req.file.path;
+      const rootDirectory = path.resolve(__dirname, "../");
+      imageUrl = path.resolve(rootDirectory, path.resolve(relativeFilePath));
+    }
 
     //create the rest
     const createRest = {
@@ -87,6 +86,7 @@ exports.putSignupRest = async (req, res, next) => {
       password: hashpw,
       location: { address, city },
       phone,
+      imageId,
       imageUrl:
         imageUrl != ""
           ? imageUrl
@@ -189,13 +189,13 @@ exports.deleteRestaurant = async (req, res, next) => {
     //delete the menu items
     const menuItems = await MenuItem.find({ restaurantId: req.restId });
 
-    for (let i = 0; i < menuItems.length; i++) {
-      const deleteImg = googleDriveDelete(menuItems[i].imageId);
-      if (deleteImg instanceof Error) {
-        throw deleteImg;
-      }
-      await MenuItem.deleteMany({ id: menuItems[i].id });
-    }
+    // for (let i = 0; i < menuItems.length; i++) {
+    //   const deleteImg = googleDriveDelete(menuItems[i].imageId);
+    //   if (deleteImg instanceof Error) {
+    //     throw deleteImg;
+    //   }
+    //   await MenuItem.deleteMany({ id: menuItems[i].id });
+    // }
 
     //delete cartItems
     await Cart.deleteMany({ restaurantId: restId });
@@ -216,9 +216,20 @@ exports.getRestaurant = async (req, res, next) => {
       throw newError("restaurant not found", 400);
     }
 
-    const restaurantMenu = await MenuItem.find({
-      restaurantId: restaurant.id,
+    console.log(restaurant._id);
+
+    let restaurantMenu = await MenuItem.find({
+      restaurant: restaurant._id,
     });
+
+    console.log(restaurantMenu);
+
+    restaurantMenu = restaurantMenu.map((m) => ({
+      ...m,
+      imageUrl: isURL(m.imageUrl)
+        ? m.imageUrl
+        : fs.readFileSync(m.imageUrl, { encoding: "base64" }),
+    }));
 
     res.status(200).json({ restaurant, menu: restaurantMenu });
   } catch (error) {
@@ -229,10 +240,25 @@ exports.getRestaurant = async (req, res, next) => {
 //getting all the restaurants
 exports.getRestaurants = async (req, res, next) => {
   try {
-    const restaurants = await Restaurant.find();
+    let restaurants = await Restaurant.find();
+    restaurants = restaurants.map((r) => ({
+      ...r,
+      imageUrl: isURL(r.imageUrl)
+        ? r.imageUrl
+        : fs.readFileSync(r.imageUrl, { encoding: "base64" }),
+    }));
 
     res.status(200).json({ restaurants });
   } catch (error) {
     next(error);
   }
 };
+
+function isURL(str) {
+  try {
+    new URL(str);
+    return true; // Valid URL
+  } catch (error) {
+    return false; // Not a URL
+  }
+}

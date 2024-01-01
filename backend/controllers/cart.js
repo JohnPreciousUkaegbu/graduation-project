@@ -2,6 +2,8 @@ const { Cart } = require("../model/cart");
 const newError = require("../util/error");
 const ValErrorCheck = require("../util/validationError");
 const { menuItemCheck } = require("../util/menu-item-check");
+const fs = require("fs");
+const path = require("path");
 
 //add to cart
 exports.postAddToCart = async (req, res, next) => {
@@ -175,7 +177,7 @@ exports.postCartItem = async (req, res, next) => {
 //get the items in a users cart
 exports.getCart = async (req, res, next) => {
   try {
-    const cart = await Cart.findOne({ userId: req.userId })
+    let cart = await Cart.findOne({ userId: req.userId })
       .lean()
       .populate("items.item");
 
@@ -193,6 +195,16 @@ exports.getCart = async (req, res, next) => {
       totalPrice = quantity * item.price;
     });
 
+    cart.items = cart.items.map((i) => ({
+      ...i,
+      item: {
+        ...i.item,
+        imageUrl: isURL(i.item.imageUrl)
+          ? i.item.imageUrl
+          : fs.readFileSync(i.item.imageUrl, { encoding: "base64" }),
+      },
+    }));
+
     res.status(200).json({
       msg: "cart items",
       cartItems: cart.items,
@@ -202,3 +214,12 @@ exports.getCart = async (req, res, next) => {
     next(err);
   }
 };
+
+function isURL(str) {
+  try {
+    new URL(str);
+    return true; // Valid URL
+  } catch (error) {
+    return false; // Not a URL
+  }
+}

@@ -1,6 +1,8 @@
 const express = require("express");
 const { body } = require("express-validator");
 const Multer = require("multer");
+const fs = require("fs");
+const path = require("path");
 
 const restAuth = require("../util/rest-Auth");
 const menuController = require("../controllers/menu-item");
@@ -22,7 +24,23 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-const upload = new Multer({ storage: memoryStorage(), fileFilter });
+const multerStorage = Multer.diskStorage({
+  destination: function (req, file, cb) {
+    const restaurantDirectory = "menu/";
+    if (!fs.existsSync(restaurantDirectory)) {
+      fs.mkdirSync(restaurantDirectory);
+    }
+    cb(null, restaurantDirectory);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = `${Date.now()}-${Math.round(
+      Math.random() * 1e9
+    )}${path.extname(file.originalname)}`;
+    cb(null, uniqueSuffix);
+  },
+});
+
+const upload = new Multer({ storage: multerStorage, fileFilter });
 
 //add-item
 router.post(

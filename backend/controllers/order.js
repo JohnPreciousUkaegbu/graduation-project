@@ -3,6 +3,7 @@ const { Order } = require("../model/order");
 const { Restaurant } = require("../model/restaurant");
 const { User } = require("../model/user");
 const newError = require("../util/error");
+const fs = require("fs");
 
 //order items in cart
 exports.postOrderAll = async (req, res, next) => {
@@ -51,8 +52,6 @@ exports.postOrderAll = async (req, res, next) => {
       items: orderItems,
     });
 
-    // console.log(order);
-
     order = order.save();
 
     userCart.deleteOne();
@@ -77,9 +76,26 @@ exports.getUserOrders = async (req, res, next) => {
       .populate("items.item")
       .populate("items.restaurant");
 
-    const ordersWithoutUser = userOrders.map((order) => {
+    let ordersWithoutUser = userOrders.map((order) => {
       const { user, ...orderWithoutUser } = order.toObject();
       return orderWithoutUser;
+    });
+
+    ordersWithoutUser = ordersWithoutUser.map((o) => {
+      return {
+        ...o,
+        items: o.items.map((i) => {
+          return {
+            ...i,
+            item: {
+              ...i.item,
+              imageUrl: isURL(i.item.imageUrl)
+                ? i.item.imageUrl
+                : fs.readFileSync(i.item.imageUrl, { encoding: "base64" }),
+            },
+          };
+        }),
+      };
     });
 
     return res.status(200).json({ orders: ordersWithoutUser });
@@ -104,12 +120,29 @@ exports.getRestaurantOrders = async (req, res, next) => {
     model: "MenuItem", // Replace 'MenuItem' with the name of your MenuItem model
   });
 
-  const filteredOrders = restaurantOrders.map((order) => ({
+  let filteredOrders = restaurantOrders.map((order) => ({
     ...order._doc,
     items: order.items.filter(
       (item) => item.restaurant.toString() === restaurantId
     ),
   }));
+
+  filteredOrders = filteredOrders.map((o) => {
+    return {
+      ...o,
+      items: o.items.map((i) => {
+        return {
+          ...i,
+          item: {
+            ...i.item,
+            imageUrl: isURL(i.item.imageUrl)
+              ? i.item.imageUrl
+              : fs.readFileSync(i.item.imageUrl, { encoding: "base64" }),
+          },
+        };
+      }),
+    };
+  });
 
   return res.status(200).json({ orders: filteredOrders });
 };
@@ -142,3 +175,12 @@ exports.postChangeOrderStatus = async (req, res, next) => {
     next(err);
   }
 };
+
+function isURL(str) {
+  try {
+    new URL(str);
+    return true; // Valid URL
+  } catch (error) {
+    return false; // Not a URL
+  }
+}

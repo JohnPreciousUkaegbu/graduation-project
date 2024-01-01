@@ -68,33 +68,52 @@ const MenuItems = () => {
             </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {menu.map((item) => (
-              <div key={item._id} className="bg-blue rounded shadow-md p-4">
-                <img
-                  src={item.imageUrl}
-                  alt={item.name}
-                  className="w-full h-40 object-cover rounded-md mb-2"
-                />
-                <h3 className="text-lg font-semibold mb-2">{item.name}</h3>
-                <h3 className="text-lg font-semibold mb-2">{item.price}</h3>
+            {menu.map((item, i) => {
+              function isURL(str) {
+                try {
+                  new URL(str);
+                  return true; // Valid URL
+                } catch (error) {
+                  return false; // Not a URL
+                }
+              }
 
-                <p className="text-gray-600 mb-4">{item.description}</p>
-                <div className="flex justify-between items-center">
-                  <button
-                    className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mr-2"
-                    onClick={() => openDialogue(true, item)}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                    onClick={() => handleDeleteSubmit(item._id)}
-                  >
-                    Delete
-                  </button>
+              var image = isURL(item.imageUrl)
+                ? item.imageUrl
+                : `data:image/jpeg;base64,${item.imageUrl}`;
+
+              return (
+                <div key={i} className="bg-blue rounded shadow-md p-4">
+                  <img
+                    src={image}
+                    alt={item._doc.name}
+                    className="w-full h-40 object-cover rounded-md mb-2"
+                  />
+                  <h3 className="text-lg font-semibold mb-2">
+                    {item._doc.name}
+                  </h3>
+                  <h3 className="text-lg font-semibold mb-2">
+                    {item._doc.price}
+                  </h3>
+
+                  <p className="text-gray-600 mb-4">{item._doc.description}</p>
+                  <div className="flex justify-between items-center">
+                    <button
+                      className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mr-2"
+                      onClick={() => openDialogue(true, item)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                      onClick={() => handleDeleteSubmit(item._doc._id)}
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

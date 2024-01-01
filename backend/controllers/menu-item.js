@@ -3,6 +3,8 @@ require("dotenv").config();
 const validationError = require("../util/validationError");
 const { MenuItem } = require("../model/menu-item");
 const { Restaurant } = require("../model/restaurant");
+const fs = require("fs");
+const path = require("path");
 const {
   googleDriveDelete,
   googleDriveGetLink,
@@ -28,30 +30,33 @@ exports.putAddItem = async (req, res, next) => {
     let imageId = "";
     let imageUrl = defaultImage;
 
-    // if (req.file) {
-    //   //converting the img buffer to a readable stream
-    //   const stream = Readable.from(req.file.buffer);
-    //   //uploading the img to google drive
-    //   const uploadImg = await googleDriveUpload(req, stream);
-    //   if (uploadImg instanceof Error) {
-    //     throw uploadImg;
-    //   }
+    if (req.file) {
+      //   //converting the img buffer to a readable stream
+      //   const stream = Readable.from(req.file.buffer);
+      //   //uploading the img to google drive
+      //   const uploadImg = await googleDriveUpload(req, stream);
+      //   if (uploadImg instanceof Error) {
+      //     throw uploadImg;
+      //   }
 
-    //   imageId = uploadImg.data.id;
+      //   imageId = uploadImg.data.id;
 
-    //   // get the img link
-    //   const imgLink = await googleDriveGetLink(uploadImg.data.id);
+      //   // get the img link
+      //   const imgLink = await googleDriveGetLink(uploadImg.data.id);
 
-    //   if (imgLink instanceof Error) {
-    //     //delete the img if eerror
-    //     const deleteImg = googleDriveDelete(imageId);
-    //     if (deleteImg instanceof Error) {
-    //       throw deleteImg;
-    //     }
-    //     throw imgLink;
-    //   }
-    //   imageUrl = imgLink.data.webViewLink;
-    // }
+      //   if (imgLink instanceof Error) {
+      //     //delete the img if eerror
+      //     const deleteImg = googleDriveDelete(imageId);
+      //     if (deleteImg instanceof Error) {
+      //       throw deleteImg;
+      //     }
+      //     throw imgLink;
+      //   }
+      //   imageUrl = imgLink.data.webViewLink;
+      const relativeFilePath = req.file.path;
+      const rootDirectory = path.resolve(__dirname, "../");
+      imageUrl = path.resolve(rootDirectory, path.resolve(relativeFilePath));
+    }
 
     const menuItem = await MenuItem.create({
       name,
@@ -82,35 +87,38 @@ exports.postEditMenuItem = async (req, res, next) => {
     let imageId = menuItem.imageId;
     let imageUrl = menuItem.imageUrl;
 
-    // if (req.file) {
-    //   //check if the img was changed
-    //   //upload the new img and delete the old img
-    //   //change the img links
-    //   const stream = Readable.from(req.file.buffer);
+    if (req.file) {
+      //   //check if the img was changed
+      //   //upload the new img and delete the old img
+      //   //change the img links
+      //   const stream = Readable.from(req.file.buffer);
 
-    //   const uploadImg = await googleDriveUpload(req, stream);
-    //   if (uploadImg instanceof Error) {
-    //     throw uploadImg;
-    //   }
+      //   const uploadImg = await googleDriveUpload(req, stream);
+      //   if (uploadImg instanceof Error) {
+      //     throw uploadImg;
+      //   }
 
-    //   //updating the img in drive
-    //   const imgLink = await googleDriveGetLink(uploadImg.data.id);
+      //   //updating the img in drive
+      //   const imgLink = await googleDriveGetLink(uploadImg.data.id);
 
-    //   if (imgLink instanceof Error) {
-    //     const deleteImg = googleDriveDelete(uploadImg.data.id);
-    //     if (deleteImg instanceof Error) {
-    //       throw deleteImg;
-    //     }
-    //     throw imgLink;
-    //   }
+      //   if (imgLink instanceof Error) {
+      //     const deleteImg = googleDriveDelete(uploadImg.data.id);
+      //     if (deleteImg instanceof Error) {
+      //       throw deleteImg;
+      //     }
+      //     throw imgLink;
+      //   }
 
-    //   const deleteImg = googleDriveDelete(imageId);
-    //   if (deleteImg instanceof Error) {
-    //     throw deleteImg;
-    //   }
-    //   imageId = uploadImg.data.id;
-    //   imageUrl = imgLink.data.webViewLink;
-    // }
+      //   const deleteImg = googleDriveDelete(imageId);
+      //   if (deleteImg instanceof Error) {
+      //     throw deleteImg;
+      //   }
+      //   imageId = uploadImg.data.id;
+      //   imageUrl = imgLink.data.webViewLink;
+      const relativeFilePath = req.file.path;
+      const rootDirectory = path.resolve(__dirname, "../");
+      imageUrl = path.resolve(rootDirectory, path.resolve(relativeFilePath));
+    }
 
     //update the menuitem
     menuItem.name = req.body.name;
@@ -171,10 +179,28 @@ exports.getRestaurantMenuItems = async (req, res, next) => {
     const restaurant = await Restaurant.findOne({ _id: restaurantId });
     if (!restaurant) throw newError("invalid restaurant");
 
-    const menuItems = await MenuItem.find({ restaurant: restaurant._id });
+    console.log(restaurant._id);
+
+    let menuItems = await MenuItem.find({ restaurant: restaurant._id });
+
+    menuItems = menuItems.map((m) => ({
+      ...m,
+      imageUrl: isURL(m.imageUrl)
+        ? m.imageUrl
+        : fs.readFileSync(m.imageUrl, { encoding: "base64" }),
+    }));
 
     res.status(200).json({ menuItems });
   } catch (err) {
     next(err);
   }
 };
+
+function isURL(str) {
+  try {
+    new URL(str);
+    return true; // Valid URL
+  } catch (error) {
+    return false; // Not a URL
+  }
+}

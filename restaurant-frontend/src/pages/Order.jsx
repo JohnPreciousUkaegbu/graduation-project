@@ -66,36 +66,51 @@ function Order(props) {
             </h2>
 
             <div className="mb-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {order.items.map((item, i) => (
-                <div key={i} className="p-2 border rounded-lg cursor-pointer">
-                  <div className="h-36 overflow-hidden">
-                    <img
-                      src={item.item.imageUrl}
-                      alt={item.item.name}
-                      className="w-full h-full  object-cover"
-                      onClick={() => openImageModal(item.item.imageUrl)}
-                    />
+              {order.items.map((item, i) => {
+                function isURL(str) {
+                  try {
+                    new URL(str);
+                    return true;
+                  } catch (error) {
+                    return false;
+                  }
+                }
+
+                var image = isURL(item.item.imageUrl)
+                  ? item.item.imageUrl
+                  : `data:image/jpeg;base64,${item.item.imageUrl}`;
+
+                return (
+                  <div key={i} className="p-2 border rounded-lg cursor-pointer">
+                    <div className="h-36 overflow-hidden">
+                      <img
+                        src={image}
+                        alt={item._doc.item.name}
+                        className="w-full h-full  object-cover"
+                        onClick={() => openImageModal(item.item.imageUrl)}
+                      />
+                    </div>
+                    <p className="font-bold text-xl">{item._doc.item.name}</p>
+                    <p
+                      className={
+                        item._doc.status.includes("accepted")
+                          ? "text-green-500"
+                          : item._doc.status.includes("declined")
+                          ? "text-red-500"
+                          : "text-gray-500"
+                      }
+                    >
+                      {item._doc.status}
+                    </p>
+                    <p>{item._doc.quantity} pieces</p>
+                    <p>${item._doc.price.toFixed(2)}</p>
                   </div>
-                  <p className="font-bold text-xl">{item.item.name}</p>
-                  <p
-                    className={
-                      item.status.includes("accepted")
-                        ? "text-green-500"
-                        : item.status.includes("declined")
-                        ? "text-red-500"
-                        : "text-gray-500"
-                    }
-                  >
-                    {item.status}
-                  </p>
-                  <p>{item.quantity} pieces</p>
-                  <p>${item.price.toFixed(2)}</p>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Buttons for order status actions */}
-            {order.items.some((item) => item.status === "pending") && (
+            {order.items.some((item) => item._doc.status === "pending") && (
               <div className="mt-2 flex space-x-2">
                 <button
                   onClick={() => handleOrderStatusChange("accepted", order._id)}
@@ -111,7 +126,7 @@ function Order(props) {
                 </button>
               </div>
             )}
-            {order.items.every((item) => item.status === "accepted") && (
+            {order.items.every((item) => item._doc.status === "accepted") && (
               <div className="mt-2">
                 <button
                   onClick={() =>

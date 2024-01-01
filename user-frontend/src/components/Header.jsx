@@ -39,15 +39,6 @@ const Header = () => {
         <ul className="text-zinc-700 ml-auto gap-2 md:gap-4 items-center hidden md:flex">
           <li>
             <Link
-              to="/"
-              className="p-2 md:px-4 hover:bg-gray-50 rounded-md flex items-center gap-2"
-            >
-              <HomeIcon className="w-4 h-4 text-gray-700" />{" "}
-              <p className="hidden md:block">Home</p>
-            </Link>
-          </li>
-          <li>
-            <Link
               to="/restaurants"
               className="p-2 md:px-4 hover:bg-gray-50 rounded-md flex items-center gap-2"
             >
@@ -106,14 +97,6 @@ const Header = () => {
           <div className="shadow-lg transition-all fixed top-full -right-[100%] bg-white h-screen p-4 px-8">
             <>
               <ul className="text-zinc-700 space-y-4">
-                <li>
-                  <Link
-                    to="/"
-                    className="p-2 md:px-4 hover:bg-gray-50 rounded-md flex items-center gap-2"
-                  >
-                    <HomeIcon className="w-4 h-4 text-gray-700" /> <p>Home</p>
-                  </Link>
-                </li>
                 <li>
                   <Link
                     to="/restaurants"
@@ -175,14 +158,6 @@ const Header = () => {
           <div className="shadow-lg transition-all md:hidden absolute top-full right-0 bg-white h-screen p-4 px-8">
             <>
               <ul className="text-zinc-700 space-y-4">
-                <li>
-                  <Link
-                    to="/"
-                    className="p-2 md:px-4 hover:bg-gray-50 rounded-md flex items-center gap-2"
-                  >
-                    <HomeIcon className="w-4 h-4 text-gray-700" /> <p>Home</p>
-                  </Link>
-                </li>
                 <li>
                   <Link
                     to="/restaurants"

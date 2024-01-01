@@ -4,10 +4,10 @@ import { SendFormDataPostRequest } from "../utils/sendRequests";
 
 function MenuItem({ message, onClose, isEdit, item }) {
   const addImageRef = useRef(null);
-  const [name, setName] = useState(isEdit ? item.name : "");
-  const [price, setPrice] = useState(isEdit ? item.price : 0);
+  const [name, setName] = useState(isEdit ? item._doc.name : "");
+  const [price, setPrice] = useState(isEdit ? item._doc.price : 0);
   const [description, setDescription] = useState(
-    isEdit ? item.description : ""
+    isEdit ? item._doc.description : ""
   );
 
   const handleAddSubmit = async (e) => {
@@ -24,7 +24,7 @@ function MenuItem({ message, onClose, isEdit, item }) {
     try {
       const Url = !isEdit
         ? `${BE_URL}/menu/add-item`
-        : `${BE_URL}/menu/edit-item/${item._id}`;
+        : `${BE_URL}/menu/edit-item/${item._doc._id}`;
       await SendFormDataPostRequest(Url, formData, {});
 
       onClose();

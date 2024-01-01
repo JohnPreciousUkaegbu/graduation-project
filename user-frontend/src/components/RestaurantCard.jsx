@@ -1,34 +1,36 @@
 import { Link } from "react-router-dom";
 import { StarIcon } from "@heroicons/react/24/solid";
 import { CDN_URL } from "../utils/constants";
+import { useState } from "react";
 
 const RestaurantCard = ({ restaurant }) => {
+  // console.log(restaurant);
+  function isURL(str) {
+    try {
+      new URL(str);
+      return true; // Valid URL
+    } catch (error) {
+      return false; // Not a URL
+    }
+  }
+
+  var image = isURL(restaurant.imageUrl)
+    ? restaurant.imageUrl
+    : `data:image/jpeg;base64,${restaurant.imageUrl}`;
+
   return (
     <>
-      {/* //for the image  */}
       <div className="overlay-container">
         <img
-          src={restaurant?.imageUrl}
-          alt="restaurant"
+          src={image}
+          alt={restaurant.imageUrl}
           className="relative w-full min-h-[180px] overflow-hidden aspect-video object-cover block rounded-md"
         />
       </div>
 
-      {/* for the name of the restaurant  */}
       <h2 className="text-lg font-semibold mt-2 text-zinc-800">
-        {restaurant?.name}
+        {restaurant?._doc?.name}
       </h2>
-
-      {/* <p className="truncate  text-zinc-600">
-        {info?.cuisines?.map((c, i) => (
-          <span key={i}>
-            {c}
-            {i === info.cuisines.length - 1 ? "" : ", "}
-          </span>
-        ))}
-      </p> */}
-
-      {/* <p className="text-zinc-600">{info?.locality}</p> */}
     </>
   );
 };

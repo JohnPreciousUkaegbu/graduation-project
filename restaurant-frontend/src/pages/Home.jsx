@@ -1,4 +1,3 @@
-// import Body from '../components/Body';
 import { Navigate } from "react-router-dom";
 
 const Home = () => {

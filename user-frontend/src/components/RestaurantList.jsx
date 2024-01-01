@@ -8,7 +8,7 @@ const RestaurantList = ({ restaurants }) => {
         {restaurants && restaurants?.length !== 0 ? (
           restaurants.map((restaurant, i) => (
             <Link
-              to={`/restaurants/${restaurant._id}`}
+              to={`/restaurants/${restaurant._doc._id}`}
               className="hover:scale-95 transition ease-in-out duration-300 relative z-10"
               key={i}
             >
